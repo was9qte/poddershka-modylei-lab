@@ -1,0 +1,11 @@
+private void LoginButton_Click(object sender, RoutedEventArgs e)
+{
+    string login = LoginTextBox.Text;
+    string password = PasswordBox.Password;
+
+    MessageBox.Show(
+        $"Введённый логин: {login}\nВведённый пароль: {password}",
+        "Результат",
+        MessageBoxButton.OK,
+        MessageBoxImage.Information);
+}
