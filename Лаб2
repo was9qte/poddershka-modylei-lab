@@ -18,3 +18,24 @@ Console.Write("Введите x: ");
     }
 }
 }
+
+
+
+
+
+
+
+using System; using System.Text.RegularExpressions;
+class Program { static void Main() { Console.Write("Введите номер автомобиля: "); string number = Console.ReadLine() ?? "";
+    string pattern = @"^[АВЕКМНОРСТУХ]\d{3}[АВЕКМНОРСТУХ]{2} \d{2,3}$";
+
+    if (Regex.IsMatch(number, pattern))
+    {
+        Console.WriteLine("Номер соответствует формату");
+    }
+    else
+    {
+        Console.WriteLine("Номер не соответствует формату");
+    }
+}
+}
