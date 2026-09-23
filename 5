@@ -1,0 +1,51 @@
+using Xunit;
+
+namespace LabWork5.Tests
+{
+    public class OrderTests
+    {
+        [Fact]
+        public void CalculateOrder_AllDiscounts_Returns5100()
+        {
+            decimal result = Order.CalculateOrder(
+                6000, true, true, true, 60);
+
+            Assert.Equal(5100m, result);
+        }
+
+        [Fact]
+        public void CalculateOrder_Registered_Returns5400()
+        {
+            decimal result = Order.CalculateOrder(
+                6000, true, false, false, 30);
+
+            Assert.Equal(5400m, result);
+        }
+
+        [Fact]
+        public void CalculateOrder_Promo_Returns3800()
+        {
+            decimal result = Order.CalculateOrder(
+                4000, false, true, false, 30);
+
+            Assert.Equal(3800m, result);
+        }
+
+        [Fact]
+        public void CalculateOrder_AgeDiscount_Returns1900()
+        {
+            decimal result = Order.CalculateOrder(
+                2000, false, false, false, 18);
+
+            Assert.Equal(1900m, result);
+        }
+
+        [Fact]
+        public void CalculateOrder_InvalidAmount_ThrowsException()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                Order.CalculateOrder(
+                    0, false, false, false, 30));
+        }
+    }
+}
