@@ -1,0 +1,55 @@
+// Создание заказа public async Task<Order> CreateOrderAsync(Guid customerId, decimal totalAmount) { // Проверяем наличие клиента var customer = await _customers.GetByIdAsync(customerId); if (customer == null) throw new InvalidOperationException("Клиент не найден.");
+// Создаём и сохраняем заказ
+var order = new Order { CustomerId = customerId, TotalAmount = totalAmount };
+await _orders.AddAsync(order);
+
+// Отправляем событие
+await _bus.PublishAsync("order.created", new { order.Id, order.CustomerId });
+return order;
+}
+// Подтверждение оплаты public async Task ConfirmPaymentAsync(Guid orderId) { var order = await GetOrderAsync(orderId); // Находим заказ order.Status = OrderStatus.Paid; // Меняем статус await _orders.UpdateAsync(order); // Сохраняем await _bus.PublishAsync("order.paid", new { order.Id }); // Отправляем событие }
+// Отмена заказа public async Task CancelOrderAsync(Guid orderId) { var order = await GetOrderAsync(orderId); // Находим заказ order.Status = OrderStatus.Cancelled; // Отменяем await _orders.UpdateAsync(order); // Сохраняем await _bus.PublishAsync("order.cancelled", new { order.Id }); // Отправляем событие }
+// Отгрузка заказа public async Task ShipOrderAsync(Guid orderId) { var order = await GetOrderAsync(orderId); // Находим заказ
+// Отгружать можно только оплаченный заказ
+if (order.Status != OrderStatus.Paid)
+    throw new InvalidOperationException(
+        "Отправить можно только оплаченные заказы.");
+
+order.Status = OrderStatus.Shipped; // Меняем статус
+await _orders.UpdateAsync(order); // Сохраняем
+await _bus.PublishAsync("order.shipped", new { order.Id }); // Отправляем событие
+}
+// Поиск заказа private async Task<Order> GetOrderAsync(Guid orderId) { return await _orders.GetByIdAsync(orderId) ?? throw new InvalidOperationException("Заказ не найден."); }
+
+
+
+
+
+
+
+[Theory]
+[InlineData(OrderStatus.Pending)]
+[InlineData(OrderStatus.Cancelled)]
+[InlineData(OrderStatus.Shipped)]
+public async Task ShipOrderWithWrongStatus(OrderStatus status)
+{
+    var order = new Order { Id = Guid.NewGuid(), Status = status };
+    _orders.Setup(x => x.GetByIdAsync(order.Id)).ReturnsAsync(order);
+
+    // Проверяем запрет отгрузки
+    var act = () => _service.ShipOrderAsync(order.Id);
+    await act.Should().ThrowAsync<InvalidOperationException>();
+}
+
+// Отгружаемый заказ не найден
+[Fact]
+public async Task ShipOrderWithoutOrder()
+{
+    var id = Guid.NewGuid();
+    _orders.Setup(x => x.GetByIdAsync(id)).ReturnsAsync((Order?)null);
+
+    // Проверяем исключение
+    var act = () => _service.ShipOrderAsync(id);
+    await act.Should().ThrowAsync<InvalidOperationException>();
+}
+}
