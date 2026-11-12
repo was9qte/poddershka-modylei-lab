@@ -1,0 +1,1 @@
+PM> Scaffold-DbContext "Data Source=mssql;Initial Catalog=ispp5515;Persist Security Info=True;User ID=ispp5515;Password=5515;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer
